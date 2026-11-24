@@ -10,6 +10,8 @@ import sys
 from pathlib import Path
 from autonomy import evaluate, validate, load, ROOT, select_skills
 from media_probe import run_media
+sys.path.insert(0,str(ROOT/"skills"))
+from retrieve import retrieve
 
 class Blocked(RuntimeError):
     pass
@@ -40,11 +42,22 @@ class Pipeline:
         self.timeout=config.get("timeout_seconds",600)
         self.repairs=config.get("max_repairs",3)
         self.roles={r["id"]:r for r in load(ROOT/"agents/roles.json")}
+        self.last_artifact=None
+        self.genre=None
+        self.constraint=None
         need(type(self.max_calls) is int and self.max_calls>=1,"invalid max_calls")
         need(type(self.repairs) is int and 0<=self.repairs<=10,"invalid max_repairs")
         need(type(self.timeout) is int and self.timeout>0,"invalid timeout")
         need(isinstance(config.get("adapters"),dict),"missing adapters")
         self.work.mkdir(parents=True,exist_ok=False)
+    def knowledge(self, disciplines, limit):
+        if self.genre:
+            rows=retrieve(self.genre,disciplines,self.constraint,limit=limit)
+            if not rows and self.constraint:
+                rows=retrieve(self.genre,disciplines,limit=limit)
+            if rows:
+                return rows
+        return [{"core":s} for s in select_skills(disciplines,limit)]
     def call(self, role, payload):
         need(self.calls<self.max_calls,"call budget exhausted")
         adapter=self.config["adapters"].get(role)
@@ -54,6 +67,21 @@ class Pipeline:
         task={"schema_version":1,"role":role,"role_contract":self.roles.get(role),
               "instruction":(ROOT/"agents/orchestrator.md").read_text(encoding="utf-8"),
               "work_dir":str(self.work),"payload":payload}
+        # Local commands receive contracts directly; an API model cannot read a repository path.
+        docs={"producer":["producing/README.md","handbook/06-genres.md"],
+              "director_a":["directing/README.md","decision-trees/README.md"],
+              "director_b":["directing/README.md","reference-analysis/README.md"],
+              "judge":["quality-control/README.md"],
+              "editor":["engines/README.md","decision-trees/README.md"],
+              "repair":["engines/README.md","quality-control/README.md"],
+              "critic":["quality-control/README.md"],
+              "sound":["handbook/03-sound.md"],"color":["handbook/04-picture.md"],
+              "motion":["handbook/04-picture.md"]}
+        paths=list(docs.get(role,[]))
+        if role in ("editor","repair") and self.config.get("plan_format")=="layered-v2":
+            paths.append("engines/layered-executor.md")
+        task["knowledge_documents"]={p:(ROOT/p).read_text(encoding="utf-8") for p in paths}
+        task["plan_format"]=self.config.get("plan_format","cut-v1")
         # Local log may contain private data; use a private work directory.
         write_json(self.work/("%03d-%s-request.json"%(self.calls,role)),task)
         p=self.runner(adapter,input=json.dumps(task,ensure_ascii=False),text=True,
@@ -70,7 +98,7 @@ class Pipeline:
         try:
             result=self._run()
         except (Blocked, subprocess.SubprocessError, OSError, ValueError, KeyError, TypeError) as e:
-            result={"status":"blocked","reason":str(e),"calls":self.calls}
+            result={"status":"blocked","reason":str(e),"calls":self.calls,"last_artifact":self.last_artifact}
         write_json(self.work/"result.json",result)
         return result
     def _run(self):
@@ -82,10 +110,12 @@ class Pipeline:
         observed=self.call("observe",{"brief":self.brief,"capabilities":capabilities})
         need(isinstance(observed.get("observations"),list) and observed["observations"],"no observations")
         production=self.call("producer",{"brief":self.brief,"observed":observed})
+        self.genre=self.brief.get("genre") or production.get("genre")
+        self.constraint=self.brief.get("constraint") or production.get("constraint")
         # Same payload; B receives no A answer.
         shared={"brief":self.brief,"production":production,"observed":observed,
                 "styles":load(ROOT/"style-library/catalog.json"),
-                "skills":select_skills(["direction","story","perception","autonomy"],12)}
+                "skills":self.knowledge(["direction","story","perception","autonomy"],12)}
         a=self.call("director_a",shared)
         b=self.call("director_b",shared)
         concepts=[]
@@ -102,25 +132,43 @@ class Pipeline:
         winner=next((c for c in concepts if c["id"]==selected.get("id")),None)
         need(winner is not None and isinstance(selected.get("reason"),str) and selected["reason"].strip(),"judge must select a concept and reason")
         editor_payload={"brief":self.brief,"production":production,"observed":observed,"selected":winner,"selection_reason":selected["reason"],
-                        "skills":select_skills(["cutting","footage","sound","color","motion","engineering"],24)}
+                        "skills":self.knowledge(["cutting","footage","sound","color","motion","engineering"],24)}
         plan=self.call("editor",editor_payload).get("plan")
-        # V1 timeline is cut-only. Specialist advice is separate, not silently encoded as unsupported transitions.
+        # Merge specialist proposals into the typed plan. Never discard them silently.
+        advice={}
         for role in ("sound","color","motion"):
             if role in self.config["adapters"]:
-                editor_payload[role+"_advice"]=self.call(role,{"brief":self.brief,"plan":plan,"observed":observed})
+                advice[role]=self.call(role,{"brief":self.brief,"plan":plan,"observed":observed})
+        if advice:
+            merged=self.call("editor",{**editor_payload,"draft_plan":plan,"specialist_advice":advice,
+                                      "instruction":"Merge feasible proposals into supported plan. List rejected proposals and reasons."})
+            need(isinstance(merged.get("specialist_disposition"),dict) and set(advice)<=set(merged["specialist_disposition"]),"specialist disposition missing")
+            plan=merged.get("plan")
+        if self.config.get("plan_format","cut-v1") not in ("cut-v1","layered-v2"):
+            raise Blocked("unsupported plan format")
         for attempt in range(self.repairs+1):
             errs=validate(plan)
+            if isinstance(plan,dict) and plan.get("layers") and self.config.get("plan_format","cut-v1")=="cut-v1":
+                errs.append("layers unsupported by cut-v1")
             if errs:
                 need(attempt<self.repairs,"invalid plan: "+"; ".join(errs))
                 plan=self.call("repair",{"plan":plan,"validation_errors":errs,"brief":self.brief}).get("plan")
                 continue
             version_dir=self.work/("v%03d"%attempt)
             version_dir.mkdir()
-            execution=self.call("executor",{"plan":plan,"version_dir":str(version_dir),"brief":self.brief,
-                                            "specialist_advice":{k:v for k,v in editor_payload.items() if k.endswith("_advice")}})
-            path=execution.get("artifact")
-            need(isinstance(path,str) and within(path,version_dir) and Path(path).is_file(),"executor artifact absent or outside version dir")
-            need(isinstance(execution.get("readback"),dict) and execution["readback"],"executor readback required")
+            try:
+                execution=self.call("executor",{"plan":plan,"version_dir":str(version_dir),"brief":self.brief,
+                                                "specialist_advice":{}})
+                path=execution.get("artifact")
+                need(isinstance(path,str) and within(path,version_dir) and Path(path).is_file(),"executor artifact absent or outside version dir")
+                need(isinstance(execution.get("readback"),dict) and execution["readback"],"executor readback required")
+            except (Blocked,subprocess.SubprocessError,OSError,ValueError,KeyError,TypeError) as e:
+                if attempt>=self.repairs:
+                    raise
+                plan=self.call("repair",{"plan":plan,"execution_error":str(e),"brief":self.brief,
+                                         "instruction":"Repair a supported operation; do not invent evidence or change unrelated cuts."}).get("plan")
+                continue
+            self.last_artifact=path
             actual=self.probe(path,decode=True,timeout=self.timeout)
             write_json(version_dir/"probe.json",actual)
             review=self.call("critic",{"artifact":path,"probe":actual,"brief":self.brief,"sources":self.brief["sources"]})
