@@ -1,0 +1,149 @@
+{
+  "kind": "contextual practice scenarios, not distinct core techniques",
+  "version": 1,
+  "core": 207,
+  "labs": 2003,
+  "total": 2210,
+  "disciplines": [
+    {
+      "discipline": "direction",
+      "core": 10,
+      "labs": 90,
+      "total": 100,
+      "path": "skills/labs/direction.json"
+    },
+    {
+      "discipline": "producing",
+      "core": 10,
+      "labs": 70,
+      "total": 80,
+      "path": "skills/labs/producing.json"
+    },
+    {
+      "discipline": "story",
+      "core": 10,
+      "labs": 90,
+      "total": 100,
+      "path": "skills/labs/story.json"
+    },
+    {
+      "discipline": "perception",
+      "core": 10,
+      "labs": 70,
+      "total": 80,
+      "path": "skills/labs/perception.json"
+    },
+    {
+      "discipline": "cutting",
+      "core": 12,
+      "labs": 138,
+      "total": 150,
+      "path": "skills/labs/cutting.json"
+    },
+    {
+      "discipline": "footage",
+      "core": 10,
+      "labs": 90,
+      "total": 100,
+      "path": "skills/labs/footage.json"
+    },
+    {
+      "discipline": "sound",
+      "core": 11,
+      "labs": 109,
+      "total": 120,
+      "path": "skills/labs/sound.json"
+    },
+    {
+      "discipline": "music",
+      "core": 10,
+      "labs": 70,
+      "total": 80,
+      "path": "skills/labs/music.json"
+    },
+    {
+      "discipline": "color",
+      "core": 10,
+      "labs": 90,
+      "total": 100,
+      "path": "skills/labs/color.json"
+    },
+    {
+      "discipline": "motion",
+      "core": 11,
+      "labs": 109,
+      "total": 120,
+      "path": "skills/labs/motion.json"
+    },
+    {
+      "discipline": "vfx",
+      "core": 11,
+      "labs": 109,
+      "total": 120,
+      "path": "skills/labs/vfx.json"
+    },
+    {
+      "discipline": "animation",
+      "core": 10,
+      "labs": 90,
+      "total": 100,
+      "path": "skills/labs/animation.json"
+    },
+    {
+      "discipline": "typography",
+      "core": 9,
+      "labs": 51,
+      "total": 60,
+      "path": "skills/labs/typography.json"
+    },
+    {
+      "discipline": "transitions",
+      "core": 10,
+      "labs": 90,
+      "total": 100,
+      "path": "skills/labs/transitions.json"
+    },
+    {
+      "discipline": "style",
+      "core": 10,
+      "labs": 140,
+      "total": 150,
+      "path": "skills/labs/style.json"
+    },
+    {
+      "discipline": "genre",
+      "core": 11,
+      "labs": 139,
+      "total": 150,
+      "path": "skills/labs/genre.json"
+    },
+    {
+      "discipline": "engineering",
+      "core": 11,
+      "labs": 139,
+      "total": 150,
+      "path": "skills/labs/engineering.json"
+    },
+    {
+      "discipline": "repair",
+      "core": 11,
+      "labs": 139,
+      "total": 150,
+      "path": "skills/labs/repair.json"
+    },
+    {
+      "discipline": "qc",
+      "core": 10,
+      "labs": 90,
+      "total": 100,
+      "path": "skills/labs/qc.json"
+    },
+    {
+      "discipline": "autonomy",
+      "core": 10,
+      "labs": 90,
+      "total": 100,
+      "path": "skills/labs/autonomy.json"
+    }
+  ]
+}

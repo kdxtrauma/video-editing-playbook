@@ -1,0 +1,11 @@
+# Layered Executor v2
+Реальный FFmpeg-адаптер: прямой монтаж из V1, визуальные видео/изображения (B-roll, full frame или inset, contain/cover, прозрачные fade), титры на кадрах с textfile, отдельные звуковые события с gain и fade, простой SDR eq. Не является Fusion/Fairlight: нет tracking, compositing masks, сложного color management, automatic ducking, HDR, optical flow, keyframes произвольных свойств и профессиональных переходов между V1 клипами.
+Оператор задаёт trusted brief: source_paths и layer_assets — карта одобренных локальных файлов, width/height, права и цветовая нормализация. Модель выдаёт только ID, никакого shell, фильтров или файловых путей. Layer assets должны быть согласованы до вызова. При layer audio звук исходного видео B-roll не используется; добавляется отдельным audio cue при необходимости.
+Plan V1 плюс layers:
+- visual: [{asset_id,kind:"video"|"image",in,out,source_in_seconds?,x?,y?,width?,height?,fit:"contain"|"cover",fade_frames?}]
+- titles: [{in,out,text,x?,y?,size?,color? ("white","black","yellow","red","cyan"),box?}]
+- audio: [{asset_id,in,out,source_in_seconds?,gain_db?,fade_in_frames?,fade_out_frames?}]
+- grade: {brightness?,contrast?,saturation?,gamma?}
+Все in/out — кадры полуоткрытого интервала master timebase. Видеослой и аудиособытие обязаны иметь реальный материал на полную длительность. Порядок visual определяет stacking. Размеры чётные. Титры проверять на фактическом устройстве; выбор шрифта зависит от локальной FFmpeg/fontconfig, необходимо проверить кириллицу. Указанные числовые пределы — технические ограничения адаптера, не художественные нормы.
+Config executor: ["/absolute/python","/absolute/repo/engines/layered_executor.py"]. Использовать editor, который знает контракт layers. При отдельном sound/color/motion advice необходимо сначала объединить рекомендации в plan; данный адаптер отклоняет необработанные советы, чтобы не скрывать потерю операций. Другие NLE-адаптеры могут реализовать больше возможностей.
+Для фактической приёмки: probe, просмотр, проверка кадров входа/выхода, звук, титры, лицензии, цвет. Машинный декод и layer_counts не доказывают художественное качество. Перед коммерческим применением прогнать синтетический интеграционный тест и реальный короткий проект.

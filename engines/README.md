@@ -13,3 +13,6 @@ autonomy.py — независимое ядро валидатора и оцен
 
 ## Полный управляющий запуск
 [Протокол pipeline.py](protocol.md) описывает реальные вызовы локальных адаптеров, независимые концепции, executor, critic и repair. [FFmpeg V1 executor](ffmpeg-executor.md) — ограниченный реальный multi-source cut-only адаптер. Он не заменяет интеграции для сложного монтажа.
+
+## Layered v2
+[Layered Executor](layered-executor.md) implements a typed visual, title, sound cue and simple grade layer on top of the V1 plan. Choose it explicitly and give the editor its schema; V1 rejects nonempty layers. Other unsupported creative operations require a separate adapter.

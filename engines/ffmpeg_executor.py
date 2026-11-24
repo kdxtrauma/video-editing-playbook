@@ -12,6 +12,8 @@ def run(args):
     return p.stdout
 
 def render(plan, source_paths, version_dir, width=1920, height=1080):
+    if plan.get("layers"):
+        raise ValueError("V1 executor cannot render layers; use layered_executor")
     errors=validate(plan)
     if errors:
         raise ValueError("; ".join(errors))
