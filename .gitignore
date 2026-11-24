@@ -1,0 +1,7 @@
+__pycache__/
+.env*
+work/
+*.mp4
+*.mov
+*.wav
+*.drp
