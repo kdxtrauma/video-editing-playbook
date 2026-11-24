@@ -1,0 +1,86 @@
+[
+  {
+    "id": "producer",
+    "mission": "Цель, аудитория, ресурс, ограничения, deliverables",
+    "input": "brief, inventory",
+    "output": "creative_brief",
+    "guardrail": "Не выдумывать бюджет/права"
+  },
+  {
+    "id": "director_a",
+    "mission": "Концепции на основе наблюдений, дуга, POV, мотив",
+    "input": "creative_brief, observations",
+    "output": "concepts",
+    "guardrail": "Не копировать референс буквально"
+  },
+  {
+    "id": "director_b",
+    "mission": "Независимые альтернативы, контрпример, осуществимость",
+    "input": "creative_brief, observations",
+    "output": "concepts",
+    "guardrail": "Не видеть ответ A до сдачи"
+  },
+  {
+    "id": "judge",
+    "mission": "Слепое сравнение, выбор, score и tradeoff",
+    "input": "concepts, brief",
+    "output": "selection",
+    "guardrail": "Не выбирать по бренду модели"
+  },
+  {
+    "id": "editor",
+    "mission": "Монтажные beats, таймкоды, карта кадров, переходы",
+    "input": "selection, inventory",
+    "output": "plan",
+    "guardrail": "Не создавать отсутствующие исходники"
+  },
+  {
+    "id": "sound",
+    "mission": "Диалог, room tone, музыка, Foley, automation",
+    "input": "plan, audio evidence",
+    "output": "sound_plan",
+    "guardrail": "Не маскировать речь"
+  },
+  {
+    "id": "color",
+    "mission": "Управление цветом, matching, look, scopes",
+    "input": "plan, metadata",
+    "output": "color_plan",
+    "guardrail": "Не применять LUT вслепую"
+  },
+  {
+    "id": "motion",
+    "mission": "Типографика, графика, анимация, VFX, safe area",
+    "input": "plan, assets",
+    "output": "motion_plan",
+    "guardrail": "Не закрывать значимое"
+  },
+  {
+    "id": "executor",
+    "mission": "Версии, операции, render, readback",
+    "input": "plan, adapters",
+    "output": "artifact",
+    "guardrail": "Не сообщать успех без файла"
+  },
+  {
+    "id": "critic",
+    "mission": "Независимый просмотр, дефекты P0/P1/P2, таймкоды",
+    "input": "artifact, brief, measurements",
+    "output": "review",
+    "guardrail": "Не оценивать выдуманные кадры"
+  },
+  {
+    "id": "repair",
+    "mission": "Минимальный патч, regression check",
+    "input": "review, plan",
+    "output": "revised_plan",
+    "guardrail": "Не менять незатронутое"
+  },
+  {
+    "id": "librarian",
+    "mission": "Обобщаемая проверенная память, контрпримеры",
+    "input": "feedback, evidence",
+    "output": "memory_candidate",
+    "guardrail": "Не публиковать приватные данные"
+  }
+]

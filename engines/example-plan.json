@@ -1,0 +1,25 @@
+{
+  "fps": {
+    "num": 25,
+    "den": 1
+  },
+  "duration_frames": 100,
+  "assets": [
+    {
+      "id": "synthetic_source",
+      "duration_frames": 200,
+      "rights": "cleared"
+    }
+  ],
+  "clips": [
+    {
+      "asset_id": "synthetic_source",
+      "source_in": 10,
+      "source_out": 110,
+      "timeline_in": 0,
+      "timeline_out": 100,
+      "track": "V1",
+      "reason": "Synthetic direct cut validation example, no real media."
+    }
+  ]
+}

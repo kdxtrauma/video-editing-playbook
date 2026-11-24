@@ -1,0 +1,15 @@
+{
+  "artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "gates": {
+    "truth": "unknown",
+    "rights": "unknown",
+    "privacy": "unknown",
+    "decode": "unknown",
+    "specs": "unknown",
+    "observation": "unknown"
+  },
+  "scores": {},
+  "evidence": {},
+  "defects": [],
+  "note": "Synthetic blocked example; no real artifact, must not approve."
+}

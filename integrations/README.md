@@ -1,0 +1,9 @@
+# Инструменты и границы
+Адаптер должен реально поддерживать probe → plan → execute → readback → export → inspect. Capability discovery и короткий smoke test обязательны. Ниже — маршруты, не утверждение о подключении.
+- FFmpeg/ffprobe: техническая инвентаризация, прямые склейки, crop/scale, overlays, фильтры аудио, decode, ebur128/loudnorm измерение. Формировать args списком, не shell. Проверить версии и фильтры. Не обещать сложный трекинг автоматически.
+- DaVinci Resolve: через установленный разрешённый scripting API проверить текущий проект, media pool, timeline, поддерживаемые операции и экспорт; Resolve/Fusion/Fairlight операции, недоступные в API, пометить blocked или использовать реальный UI с readback. XML/AAF обмен имеет ограничения, проверять round-trip. Не считать XML доказательством рендера.
+- Remotion: композиции с frame-based timing, declarative graphics, captions, тестовые кадры; локально проверить версии Node, браузер, шрифты и лицензии. Не использовать как замену произвольному NLE.
+- Blender: 3D, camera, compositing, render passes, VSE по реально доступным API. Проверять occlusion, transforms, direction, frame ranges. 2.5D не превращать в 3D без брифа.
+- OpenCV: shot candidates, optical flow, track, crop metrics; алгоритм предлагает наблюдения, режиссёр проверяет смысл. Не использовать детектор лица для установления личности.
+- Speech/audio: ASR с таймкодами, waveform, alignment, speaker labels без идентификации; перепроверить имена и терминологию. Для модели без аудио дать измерения/транскрипт, не объявлять listening pass.
+При ошибке: сохранить stdout/stderr с редактированием секретов; минимальный тест, диагностировать, исправить, повторить. Если невозможно, указать неподдерживаемую операцию. Технический исполнитель не должен принимать произвольный shell или URL из текста модели.
